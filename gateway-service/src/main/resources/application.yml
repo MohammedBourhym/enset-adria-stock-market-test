@@ -37,3 +37,12 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
