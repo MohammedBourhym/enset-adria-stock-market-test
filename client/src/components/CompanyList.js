@@ -15,7 +15,11 @@ function CompanyList() {
   }, []);
 
   useEffect(() => {
-    filterCompanies();
+    if (selectedDomain === 'ALL') {
+      setFilteredCompanies(companies);
+    } else {
+      setFilteredCompanies(companies.filter(c => c.domain === selectedDomain));
+    }
   }, [selectedDomain, companies]);
 
   const loadCompanies = async () => {
@@ -26,14 +30,6 @@ function CompanyList() {
     } catch (error) {
       console.error('Error loading companies:', error);
       setLoading(false);
-    }
-  };
-
-  const filterCompanies = () => {
-    if (selectedDomain === 'ALL') {
-      setFilteredCompanies(companies);
-    } else {
-      setFilteredCompanies(companies.filter(c => c.domain === selectedDomain));
     }
   };
 
