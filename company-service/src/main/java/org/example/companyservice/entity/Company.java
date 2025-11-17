@@ -31,6 +31,5 @@ public class Company {
     private Double currentStockPrice;
     
     @NotBlank(message = "Domain is required")
-    @Enumerated(EnumType.STRING)
     private String domain;
 }
