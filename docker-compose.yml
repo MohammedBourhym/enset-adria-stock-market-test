@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stockmarket
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - stock-market-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Discovery Service (Eureka)
+  discovery-service:
+    build:
+      context: ./discovery-service
+      dockerfile: Dockerfile
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+    networks:
+      - stock-market-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Gateway Service
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8888:8888"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - stock-market-network
+
+  # Company Service
+  company-service:
+    build:
+      context: ./company-service
+      dockerfile: Dockerfile
+    container_name: company-service
+    ports:
+      - "8081:8081"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/stockmarket
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - stock-market-network
+
+  # Stock Service
+  stock-service:
+    build:
+      context: ./stock-service
+      dockerfile: Dockerfile
+    container_name: stock-service
+    ports:
+      - "8082:8082"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/stockmarket
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      company-service:
+        condition: service_started
+    networks:
+      - stock-market-network
+
+  # Chat Bot Service
+  chat-bot-service:
+    build:
+      context: ./chat-bot-service
+      dockerfile: Dockerfile
+    container_name: chat-bot-service
+    ports:
+      - "8083:8083"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/stockmarket
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - stock-market-network
+
+volumes:
+  postgres_data:
+
+networks:
+  stock-market-network:
+    driver: bridge

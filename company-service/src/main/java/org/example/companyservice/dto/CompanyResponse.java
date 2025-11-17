@@ -3,6 +3,7 @@ package org.example.companyservice.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.companyservice.enums.Domain;
 
 import java.time.LocalDate;
 
@@ -15,5 +16,5 @@ public class CompanyResponse {
     private String name;
     private LocalDate ipoDate;
     private Double currentStockPrice;
-    private String domain;
+    private Domain domain;
 }

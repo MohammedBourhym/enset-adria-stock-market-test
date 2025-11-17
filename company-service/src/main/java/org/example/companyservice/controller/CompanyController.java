@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.companyservice.dto.CompanyRequest;
 import org.example.companyservice.dto.CompanyResponse;
 import org.example.companyservice.dto.PriceUpdateRequest;
+import org.example.companyservice.enums.Domain;
 import org.example.companyservice.service.CompanyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +53,7 @@ public class CompanyController {
     }
     
     @GetMapping("/domain/{domain}")
-    public ResponseEntity<List<CompanyResponse>> getCompaniesByDomain(@PathVariable String domain) {
+    public ResponseEntity<List<CompanyResponse>> getCompaniesByDomain(@PathVariable Domain domain) {
         List<CompanyResponse> companies = companyService.getCompaniesByDomain(domain);
         return ResponseEntity.ok(companies);
     }

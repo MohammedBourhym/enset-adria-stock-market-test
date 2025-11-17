@@ -5,6 +5,7 @@ import org.example.companyservice.dto.CompanyRequest;
 import org.example.companyservice.dto.CompanyResponse;
 import org.example.companyservice.dto.PriceUpdateRequest;
 import org.example.companyservice.entity.Company;
+import org.example.companyservice.enums.Domain;
 import org.example.companyservice.repository.CompanyRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,7 +68,7 @@ public class CompanyServiceImpl implements CompanyService {
     
     @Override
     @Transactional(readOnly = true)
-    public List<CompanyResponse> getCompaniesByDomain(String domain) {
+    public List<CompanyResponse> getCompaniesByDomain(Domain domain) {
         return companyRepository.findByDomain(domain).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.companyservice.enums.Domain;
 
 import java.time.LocalDate;
 
@@ -30,6 +31,7 @@ public class Company {
     @Positive(message = "Stock price must be positive")
     private Double currentStockPrice;
     
-    @NotBlank(message = "Domain is required")
-    private String domain;
+    @NotNull(message = "Domain is required")
+    @Enumerated(EnumType.STRING)
+    private Domain domain;
 }
